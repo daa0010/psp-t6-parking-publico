@@ -33,12 +33,11 @@ PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Agu
    como el orden de ejecución depende del planificador del sistema operativo, un fallo que no aparece en diez pruebas
    puede manifestarse una vez entre mil en cualquier momento.
 2. Si cambias `libres--` por `libres = libres - 1`, ¿se arregla algo? ¿Por qué? **No se arregla nada.** En primer lugar,
-   ninguna de las dos instrucciones es atómica: internamente ambas hacen
+   ninguna de las dos instrucciones internamente hacen
    exactamente los mismos tres pasos (leer el valor actual de `libres`, restarle 1 y volver a escribirlo), por lo que
-   dos hilos pueden leer el mismo valor y
-   pisarse al escribir. Además, aunque la resta fuera atómica, el problema principal continuaría porque comprobar
-   `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin exclusión mutua, permitiendo que dos hilos
-   entren a la vez en el `if`.
+   dos hilos pueden leer el mismo valor y pisarse al escribir. Además, aunque la resta fuera atómica, el problema
+   principal continuaría porque comprobar `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin 
+   exclusión mutua, permitiendo que dos hilos entren a la vez en el `if`.
 
 ### Nivel 2
 
