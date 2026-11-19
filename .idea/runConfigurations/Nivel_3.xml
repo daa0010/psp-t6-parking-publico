@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Nivel 3 · Semáforos" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="parking.Nivel3Semaforos" />
+    <module name="parking-publico" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

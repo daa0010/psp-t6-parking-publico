@@ -1,33 +1,65 @@
-# Parking público · Semáforos, synchronized y monitores
+# Tarea · Parking público · Semáforos, synchronized y monitores
 
-PSP · Tema 6 · Sincronización de varios hilos · 2.º A DAM · 2026/2027 · Java 17, sin dependencias.
+PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Aguilar
 
-Un parking de **3 plazas** al que llegan **8 coches** (8 hilos) a la vez. El mismo problema resuelto cuatro veces, de peor a mejor:
+> Completa los apartados. Borra las líneas que empiezan por `>` antes de entregar.
+> La guía «PSP_T6_Guia_Alumno_Parking_Publico» explica cada nivel: tenla abierta mientras trabajas.
 
-| Nivel | Clase | Qué se aprende | ¿Funciona? |
-|---|---|---|---|
-| 1 | `Nivel1SinControl` | Condición de carrera: comprobar y actuar no es atómico | No: más coches que plazas y la caja no cuadra |
-| 2 | `Nivel2Synchronized` | Monitor con `synchronized` (exclusión mutua) | Sí, pero si está lleno el coche se va |
-| 3 | `Nivel3Semaforos` | `Semaphore` contador (plazas), binario (cajero), justo y `tryAcquire` con tiempo | Sí, y los coches esperan su turno |
-| 4 | `Nivel4Monitor` | El mismo parking con `while` + `wait()` + `notifyAll()` y un panel demonio con los estados | Sí |
+## Estado de la tarea
 
-`Util` tiene lo común: `dormir()`, `azar()`, `log()` (con instante y nombre del hilo) y `comprobar()`.
+| Nivel | Clase                | Qué hay que hacer                            | Hecho |
+|-------|----------------------|----------------------------------------------|-------|
+| 1     | `Nivel1SinControl`   | Ejecutar y observar (no se cambia el código) | ☑    |
+| 2     | `Nivel2Synchronized` | TODO 2a-2c                                   | ☐    |
+| 3     | `Nivel3Semaforos`    | TODO 3a-3g                                   | ☐    |
+| 4     | `Nivel4Monitor`      | TODO 4a-4c                                   | ☐    |
 
-## Abrirlo en IntelliJ IDEA
+## Capturas
 
-1. *File > Open* y elegir esta carpeta.
-2. Clic derecho en `src` > *Mark Directory as > Sources Root*.
-3. *File > Project Structure > Project*: SDK 17 o superior.
-4. Abrir `Nivel1SinControl.java` y pulsar el triángulo verde junto a `main`.
+> Pega la salida final («CIERRE DEL NIVEL») de los niveles 2, 3 y 4 con todas las comprobaciones en OK.
 
-## Desde la terminal
+## Respuestas a «Para pensar»
 
-```bash
-javac --release 17 -encoding UTF-8 -d out src/parking/*.java
-java -cp out parking.Nivel1SinControl
-java -cp out parking.Nivel2Synchronized
-java -cp out parking.Nivel3Semaforos
-java -cp out parking.Nivel4Monitor
-```
+> Haz los cambios que pide cada pregunta en una copia o **deshazlos después**: el código que entregas debe ser el
+> correcto.
 
-Cada nivel termina con unas líneas `OK` / `ERROR` que comprueban si el parking ha funcionado. Ejecuta cada nivel **varias veces**: con hilos, cada ejecución es distinta.
+### Nivel 1
+
+1. Quita `Util.dormir(5);` de `entrar()` y ejecuta diez veces. ¿Sigue fallando siempre? ¿Significa eso que el programa
+   ya es correcto?
+   No sigue fallando siempre, en muchas ejecuciones puede terminar sin errores porque, al quitar
+   la pausa de 5 ms, la ventana de tiempo entre comprobar `if (libres > 0)` y restar `libres--` se vuelve minúscula. Sin
+   embargo, **el programa sigue siendo incorrecto**. La condición de carrera no ha desaparecido, solo es menos probable,
+   como el orden de ejecución depende del planificador del sistema operativo, un fallo que no aparece en diez pruebas
+   puede manifestarse una vez entre mil en cualquier momento.
+2. Si cambias `libres--` por `libres = libres - 1`, ¿se arregla algo? ¿Por qué? **No se arregla nada.** En primer lugar,
+   ninguna de las dos instrucciones es atómica: internamente ambas hacen
+   exactamente los mismos tres pasos (leer el valor actual de `libres`, restarle 1 y volver a escribirlo), por lo que
+   dos hilos pueden leer el mismo valor y
+   pisarse al escribir. Además, aunque la resta fuera atómica, el problema principal continuaría porque comprobar
+   `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin exclusión mutua, permitiendo que dos hilos
+   entren a la vez en el `if`.
+
+### Nivel 2
+
+3. `entrar()` devuelve las plazas que quedan en vez de que el coche las lea después con `getLibres()`. ¿Qué podría pasar
+   si las leyera después?
+4. Quita `synchronized` solo de `salir()`. ¿Qué comprobación puede fallar ahora?
+
+### Nivel 3
+
+5. Cambia `new Semaphore(PLAZAS, true)` por `new Semaphore(PLAZAS)`. ¿Siguen entrando en orden de llegada? ¿Qué problema
+   podría aparecer con muchos coches?
+6. Mueve `plazas.release()` fuera del `finally`, justo después de pagar. ¿En qué situación dejaría de funcionar?
+7. ¿Qué pasaría si el cajero fuera `new Semaphore(2)`? ¿Y `new Semaphore(0)`?
+
+### Nivel 4
+
+8. En el panel, ¿en qué estado está un coche que espera plaza? ¿Y uno que está aparcado? ¿Por qué no son el mismo?
+9. Cambia `notifyAll()` por `notify()`. Aquí sigue funcionando. ¿En qué tipo de programa dejaría de funcionar?
+10. Cambia el `while` por `if` y ejecuta varias veces. ¿Qué comprobación falla? Explica con una secuencia concreta de
+    coches por qué ocurre.
+
+## Uso de IA
+
+> Solo está permitido el NotebookLM del módulo. Indica si lo has usado y para qué.

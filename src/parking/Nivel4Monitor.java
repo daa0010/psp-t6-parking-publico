@@ -6,6 +6,10 @@ import java.util.List;
 /**
  * NIVEL 4 · El mismo parking con un MONITOR hecho a mano: synchronized + wait() + notifyAll().
  *
+ * >>> TAREA · TODO 4 <<<
+ * Completa los TODO 4a a 4c siguiendo el apartado 6 de la guía. NO uses semáforos en este nivel.
+ * El panel luminoso ya está hecho: úsalo para ver los estados de los coches.
+ *
  * Hace lo mismo que el semáforo del nivel 3 (los coches esperan a que haya plaza),
  * pero programado por nosotros. Así se ve qué hace un semáforo «por dentro».
  *
@@ -32,27 +36,26 @@ public class Nivel4Monitor {
         }
 
         /** Espera hasta que haya una plaza libre y la ocupa. Devuelve las plazas que quedan. */
-        synchronized int entrar() throws InterruptedException {
-            while (libres == 0) {                       // ¿por qué while? al despertar, otro coche
-                Util.log("espera: parking lleno");      // puede haberse quedado ya la plaza
-                wait();                                 // suelta el cerrojo y duerme (WAITING)
-            }
+        int entrar() throws InterruptedException {
+            // TODO 4a: mientras no haya plazas libres, el coche espera.
+            //          Antes de cada espera escribe: Util.log("espera: parking lleno");
             libres--;
             maxDentro = Math.max(maxDentro, capacidad - libres);
             return libres;
         }
 
         /** Libera la plaza, cobra y avisa a los que esperan. Devuelve las plazas libres. */
-        synchronized int salir(int euros) {
+        int salir(int euros) {
             recaudado += euros;
             libres++;
-            notifyAll();                                // despierta a TODOS los que esperan en este objeto
+            // TODO 4b: avisa a los coches que esperan plaza
             return libres;
         }
 
-        synchronized int getLibres() { return libres; }
-        synchronized int getMaxDentro() { return maxDentro; }
-        synchronized int getRecaudado() { return recaudado; }
+        // TODO 4c: un monitor protege TODO su estado. Revisa todos los métodos de esta clase.
+        int getLibres() { return libres; }
+        int getMaxDentro() { return maxDentro; }
+        int getRecaudado() { return recaudado; }
     }
 
     public static void main(String[] args) throws InterruptedException {

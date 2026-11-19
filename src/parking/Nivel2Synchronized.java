@@ -6,6 +6,10 @@ import java.util.List;
 /**
  * NIVEL 2 · El parking como MONITOR con synchronized (exclusión mutua).
  *
+ * >>> TAREA · TODO 2 <<<
+ * Este código es el del nivel 1 (sin protección). Ejecútalo: las comprobaciones salen en ERROR.
+ * Conviértelo en un monitor para que salgan todas en OK. Sigue el apartado 4 de la guía.
+ *
  * Mismo parking y mismos coches que el nivel 1, con un único cambio:
  * los métodos que tocan el estado compartido son synchronized.
  *
@@ -36,10 +40,11 @@ public class Nivel2Synchronized {
          * (Se devuelve aquí dentro porque, si lo leyéramos después con getLibres(),
          * otro coche podría haber cambiado el valor entre medias.)
          */
-        synchronized int entrar() {
+        // TODO 2a: comprobar y actuar deben ser una sola sección crítica
+        int entrar() {
             if (libres > 0) {
-                Util.dormir(5);        // el conductor sigue dudando, pero ahora con el cerrojo cogido:
-                libres--;              // nadie más puede entrar en ningún método synchronized del parking
+                Util.dormir(5);        // el conductor duda (no lo borres: simula el tiempo entre mirar y entrar)
+                libres--;
                 dentro++;
                 maxDentro = Math.max(maxDentro, dentro);
                 return libres;
@@ -47,7 +52,8 @@ public class Nivel2Synchronized {
             return -1;
         }
 
-        synchronized void salir(int euros) {
+        // TODO 2b: pagar y devolver la plaza también tocan el estado compartido
+        void salir(int euros) {
             int caja = recaudado;
             Util.dormir(10);               // (el cajero tarda en contar)
             recaudado = caja + euros;
@@ -55,10 +61,10 @@ public class Nivel2Synchronized {
             libres++;
         }
 
-        // También los getters: si no, otro hilo podría leer un valor antiguo (inconsistencia de memoria)
-        synchronized int getLibres() { return libres; }
-        synchronized int getMaxDentro() { return maxDentro; }
-        synchronized int getRecaudado() { return recaudado; }
+        // TODO 2c: ¿y los getters? Piensa en la inconsistencia de memoria
+        int getLibres() { return libres; }
+        int getMaxDentro() { return maxDentro; }
+        int getRecaudado() { return recaudado; }
     }
 
     public static void main(String[] args) throws InterruptedException {
