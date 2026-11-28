@@ -55,12 +55,12 @@ Han aparcado 7 de 8 coches (el impaciente puede irse sin aparcar).
    embargo, **el programa sigue siendo incorrecto**. La condición de carrera no ha desaparecido, solo es menos probable,
    como el orden de ejecución depende del planificador del sistema operativo, un fallo que no aparece en diez pruebas
    puede manifestarse una vez entre mil en cualquier momento.
-2. Si cambias `libres--` por `libres = libres - 1`, ¿se arregla algo? ¿Por qué? **No se arregla nada.** En primer lugar,
-   ninguna de las dos instrucciones internamente hacen
-   exactamente los mismos tres pasos (leer el valor actual de `libres`, restarle 1 y volver a escribirlo), por lo que
-   dos hilos pueden leer el mismo valor y pisarse al escribir. Además, aunque la resta fuera atómica, el problema
-   principal continuaría porque comprobar `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin
-   exclusión mutua, permitiendo que dos hilos entren a la vez en el `if`.
+2. Si cambias `libres--` por `libres = libres - 1`, ¿se arregla algo? ¿Por qué? 
+   **No se arregla nada.** En primer lugar, ninguna de las dos instrucciones internamente hacen exactamente los mismos 
+   tres pasos (leer el valor actual de `libres`, restarle 1 y volver a escribirlo), por lo que dos hilos pueden leer el 
+   mismo valor y pisarse al escribir. Además, aunque la resta fuera atómica, el problema principal continuaría porque
+   comprobar `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin exclusión mutua, permitiendo que 
+   dos hilos entren a la vez en el `if`.
 
 ### Nivel 2
 
@@ -72,9 +72,9 @@ Han aparcado 7 de 8 coches (el impaciente puede irse sin aparcar).
    podrían imprimir el mismo número de plazas libres). Al devolver `libres` desde dentro de `entrar()`, la modificación
    y la lectura forman una única operación protegida bajo el mismo cerrojo.
 4. Quita `synchronized` solo de `salir()`. ¿Qué comprobación puede fallar ahora?
-   Basta con dejar un método sin sincronizar para que reaparezca la condición de carrera. Principalmente falla *
-   *`La caja cuadra`** (dos coches que salen a la vez leen el mismo valor de `recaudado`, esperan en `Util.dormir(10)` y
-   al sumar pisan uno de los pagos, perdiéndose dinero). También pueden fallar el recuento de **`plazas libres`** al
+   Basta con dejar un método sin sincronizar para que reaparezca la condición de carrera. Principalmente falla
+   **`La caja cuadra`** (dos coches que salen a la vez leen el mismo valor de `recaudado`, esperan en `Util.dormir(10)` 
+   y al sumar pisan uno de los pagos, perdiéndose dinero). También pueden fallar el recuento de **`plazas libres`** al
    cerrar o el control de **`máximo de coches dentro`**, ya que `salir()` modifica `libres++` y `dentro--` sin cerrojo
    mientras otro hilo puede estar modificándolos a la vez en `entrar()` o en otro `salir()`.
 
@@ -84,9 +84,8 @@ Han aparcado 7 de 8 coches (el impaciente puede irse sin aparcar).
    podría aparecer con muchos coches?
    **No siempre.** Al quitar el parámetro `true`, el semáforo pasa a ser no justo (*unfair*), por lo que no garantiza un
    orden estricto de llegada (FIFO): cuando se libera una plaza, un coche recién llegado puede adelantarse a otro que ya
-   llevaba tiempo esperando. Con muchos coches llegando de forma continua, esto puede provocar *
-   *inanición (*starvation*)**, es decir, que algún hilo tenga mala suerte y se quede esperando indefinidamente sin
-   conseguir nunca permiso para entrar.
+   llevaba tiempo esperando. Con muchos coches llegando de forma continua, esto puede provocar **inanición**, es decir, 
+   que algún hilo tenga mala suerte y se quede esperando indefinidamente sin conseguir nunca permiso para entrar.
 6. Mueve `plazas.release()` fuera del `finally`, justo después de pagar. ¿En qué situación dejaría de funcionar?
    Dejaría de funcionar si se produce una **excepción** (por ejemplo, una `InterruptedException` al esperar en
    `cajero.acquire()` o cualquier error en tiempo de ejecución mientras el coche está dentro del parking) antes de
