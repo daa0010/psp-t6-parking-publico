@@ -9,14 +9,29 @@ PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Agu
 
 | Nivel | Clase                | Qué hay que hacer                            | Hecho |
 |-------|----------------------|----------------------------------------------|-------|
-| 1     | `Nivel1SinControl`   | Ejecutar y observar (no se cambia el código) | ☑    |
-| 2     | `Nivel2Synchronized` | TODO 2a-2c                                   | ☐    |
-| 3     | `Nivel3Semaforos`    | TODO 3a-3g                                   | ☐    |
-| 4     | `Nivel4Monitor`      | TODO 4a-4c                                   | ☐    |
+| 1     | `Nivel1SinControl`   | Ejecutar y observar (no se cambia el código) | ☑     |
+| 2     | `Nivel2Synchronized` | TODO 2a-2c                                   | ☑     |
+| 3     | `Nivel3Semaforos`    | TODO 3a-3g                                   | ☐     |
+| 4     | `Nivel4Monitor`      | TODO 4a-4c                                   | ☐     |
 
 ## Capturas
 
 > Pega la salida final («CIERRE DEL NIVEL») de los niveles 2, 3 y 4 con todas las comprobaciones en OK.
+
+### Nivel 2
+
+===== CIERRE DEL NIVEL 2 =====
+Coches que aparcaron: 3 · se fueron sin aparcar: 5
+OK Nunca hubo más coches que plazas (máximo 3/3)
+OK La caja cuadra (6 €)
+OK Al cerrar quedan 3 plazas libres
+PERO 5 coches se han ido sin aparcar: nadie espera su turno.
+
+### Nivel 3
+
+
+### Nivel 4
+
 
 ## Respuestas a «Para pensar»
 
@@ -36,14 +51,24 @@ PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Agu
    ninguna de las dos instrucciones internamente hacen
    exactamente los mismos tres pasos (leer el valor actual de `libres`, restarle 1 y volver a escribirlo), por lo que
    dos hilos pueden leer el mismo valor y pisarse al escribir. Además, aunque la resta fuera atómica, el problema
-   principal continuaría porque comprobar `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin 
+   principal continuaría porque comprobar `if (libres > 0)` y descontar la plaza siguen siendo pasos separados sin
    exclusión mutua, permitiendo que dos hilos entren a la vez en el `if`.
 
 ### Nivel 2
 
 3. `entrar()` devuelve las plazas que quedan en vez de que el coche las lea después con `getLibres()`. ¿Qué podría pasar
    si las leyera después?
+   Si el coche leyera las plazas con `getLibres()` en una llamada separada tras salir de `entrar()`, soltaría el cerrojo
+   entre ambas operaciones y otro hilo podría entrar o salir en ese instante modificando `libres`. Como resultado, el
+   coche mostraría un valor que ya no corresponde al momento en que realmente entró (por ejemplo, dos coches seguidos
+   podrían imprimir el mismo número de plazas libres). Al devolver `libres` desde dentro de `entrar()`, la modificación
+   y la lectura forman una única operación protegida bajo el mismo cerrojo.
 4. Quita `synchronized` solo de `salir()`. ¿Qué comprobación puede fallar ahora?
+   Basta con dejar un método sin sincronizar para que reaparezca la condición de carrera. Principalmente falla *
+   *`La caja cuadra`** (dos coches que salen a la vez leen el mismo valor de `recaudado`, esperan en `Util.dormir(10)` y
+   al sumar pisan uno de los pagos, perdiéndose dinero). También pueden fallar el recuento de **`plazas libres`** al
+   cerrar o el control de **`máximo de coches dentro`**, ya que `salir()` modifica `libres++` y `dentro--` sin cerrojo
+   mientras otro hilo puede estar modificándolos a la vez en `entrar()` o en otro `salir()`.
 
 ### Nivel 3
 

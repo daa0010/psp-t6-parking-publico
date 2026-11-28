@@ -41,7 +41,7 @@ public class Nivel2Synchronized {
          * otro coche podría haber cambiado el valor entre medias.)
          */
         // TODO 2a: comprobar y actuar deben ser una sola sección crítica
-        int entrar() {
+        synchronized int entrar() {
             if (libres > 0) {
                 Util.dormir(5);        // el conductor duda (no lo borres: simula el tiempo entre mirar y entrar)
                 libres--;
@@ -53,7 +53,7 @@ public class Nivel2Synchronized {
         }
 
         // TODO 2b: pagar y devolver la plaza también tocan el estado compartido
-        void salir(int euros) {
+        synchronized void salir(int euros) {
             int caja = recaudado;
             Util.dormir(10);               // (el cajero tarda en contar)
             recaudado = caja + euros;
@@ -62,9 +62,9 @@ public class Nivel2Synchronized {
         }
 
         // TODO 2c: ¿y los getters? Piensa en la inconsistencia de memoria
-        int getLibres() { return libres; }
-        int getMaxDentro() { return maxDentro; }
-        int getRecaudado() { return recaudado; }
+        synchronized int getLibres() { return libres; }
+        synchronized int getMaxDentro() { return maxDentro; }
+        synchronized int getRecaudado() { return recaudado; }
     }
 
     public static void main(String[] args) throws InterruptedException {
