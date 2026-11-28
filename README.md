@@ -2,9 +2,6 @@
 
 PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Aguilar
 
-> Completa los apartados. Borra las líneas que empiezan por `>` antes de entregar.
-> La guía «PSP_T6_Guia_Alumno_Parking_Publico» explica cada nivel: tenla abierta mientras trabajas.
-
 ## Estado de la tarea
 
 | Nivel | Clase                | Qué hay que hacer                            | Hecho |
@@ -12,11 +9,9 @@ PSP · Tema 6 · 2.º A DAM · 2026/2027 · Nombre y apellidos: David Alonso Agu
 | 1     | `Nivel1SinControl`   | Ejecutar y observar (no se cambia el código) | ☑     |
 | 2     | `Nivel2Synchronized` | TODO 2a-2c                                   | ☑     |
 | 3     | `Nivel3Semaforos`    | TODO 3a-3g                                   | ☑     |
-| 4     | `Nivel4Monitor`      | TODO 4a-4c                                   | ☐     |
+| 4     | `Nivel4Monitor`      | TODO 4a-4c                                   | ☑     |
 
 ## Capturas
-
-> Pega la salida final («CIERRE DEL NIVEL») de los niveles 2, 3 y 4 con todas las comprobaciones en OK.
 
 ### Nivel 2
 
@@ -42,10 +37,14 @@ Han aparcado 7 de 8 coches (el impaciente puede irse sin aparcar).
 
 ### Nivel 4
 
-## Respuestas a «Para pensar»
+```text
+===== CIERRE DEL NIVEL 4 =====
+  OK     Han aparcado los 8 coches (recaudado 16 €)
+  OK     Nunca hubo más coches que plazas (máximo 3/3)
+  OK     Al cerrar quedan 3 plazas libres
+```
 
-> Haz los cambios que pide cada pregunta en una copia o **deshazlos después**: el código que entregas debe ser el
-> correcto.
+## Respuestas a «Para pensar»
 
 ### Nivel 1
 
@@ -105,10 +104,25 @@ Han aparcado 7 de 8 coches (el impaciente puede irse sin aparcar).
 ### Nivel 4
 
 8. En el panel, ¿en qué estado está un coche que espera plaza? ¿Y uno que está aparcado? ¿Por qué no son el mismo?
+    - **Esperando plaza:** aparece en estado **`WAIT`** (`WAITING`), porque ejecuta `wait()` sin límite de tiempo y
+      queda dormido de forma indefinida hasta que otro hilo le avise con `notifyAll()`.
+    - **Aparcado:** aparece en estado **`TWAIT`** (`TIMED_WAITING`), porque ejecuta `Util.dormir(...)` (
+      `Thread.sleep(ms)`), que es una pausa con un tiempo máximo fijado tras el cual el hilo despierta solo.
 9. Cambia `notifyAll()` por `notify()`. Aquí sigue funcionando. ¿En qué tipo de programa dejaría de funcionar?
+   Dejaría de funcionar en programas donde haya **hilos esperando por condiciones distintas sobre el mismo monitor**,
+   como en el clásico **productor-consumidor** con un buffer acotado. Si un consumidor vacía un hueco y llama a
+   `notify()`, la JVM podría despertar a otro consumidor (que vuelve a dormirse porque el buffer sigue vacío) en lugar
+   de a un productor, pudiendo acabar todos los hilos dormidos para siempre (*deadlock*).
 10. Cambia el `while` por `if` y ejecuta varias veces. ¿Qué comprobación falla? Explica con una secuencia concreta de
     coches por qué ocurre.
+    Puede fallar **`Nunca hubo más coches que plazas`** (al entrar más de 3 coches a la vez y bajar `libres` a valores
+    negativos).  
+    **Secuencia concreta:**
+    1. El parking está lleno (`libres == 0`) y **Coche-4** y **Coche-5** están dormidos en `wait()`.
+    2. Sale **Coche-1**: ejecuta `libres++` (`libres` pasa a `1`) y llama a `notifyAll()`, despertando a Coche-4 y
+       Coche-5.
+    3. **Coche-4** recupera el cerrojo primero, sale del `if`, resta `libres--` (`libres` vuelve a `0`) y entra.
+    4. **Coche-5** recupera el cerrojo después: como hay un `if` y no un `while`, no vuelve a comprobar si
+       `libres == 0`,
+       continúa la ejecución, resta `libres--` (`libres` pasa a `-1`) y entra también, superando el aforo de 3 plazas.
 
-## Uso de IA
-
-> Solo está permitido el NotebookLM del módulo. Indica si lo has usado y para qué.

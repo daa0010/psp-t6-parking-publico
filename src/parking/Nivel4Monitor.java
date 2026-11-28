@@ -5,20 +5,20 @@ import java.util.List;
 
 /**
  * NIVEL 4 · El mismo parking con un MONITOR hecho a mano: synchronized + wait() + notifyAll().
- *
+ * <p>
  * >>> TAREA · TODO 4 <<<
  * Completa los TODO 4a a 4c siguiendo el apartado 6 de la guía. NO uses semáforos en este nivel.
  * El panel luminoso ya está hecho: úsalo para ver los estados de los coches.
- *
+ * <p>
  * Hace lo mismo que el semáforo del nivel 3 (los coches esperan a que haya plaza),
  * pero programado por nosotros. Así se ve qué hace un semáforo «por dentro».
- *
+ * <p>
  * Reglas de oro del monitor:
- *   1. Todo el estado compartido es privado y se toca solo en métodos synchronized.
- *   2. Se espera una condición con  while (no se cumple) wait();   ¡while, nunca if!
- *      wait() SUELTA el cerrojo mientras duerme y lo recupera al despertar.
- *   3. Quien cambia el estado avisa con notifyAll(). No suelta el cerrojo hasta salir del método.
- *
+ * 1. Todo el estado compartido es privado y se toca solo en métodos synchronized.
+ * 2. Se espera una condición con  while (no se cumple) wait();   ¡while, nunca if!
+ * wait() SUELTA el cerrojo mientras duerme y lo recupera al despertar.
+ * 3. Quien cambia el estado avisa con notifyAll(). No suelta el cerrojo hasta salir del método.
+ * <p>
  * Además hay un PANEL LUMINOSO: un hilo demonio que cada 150 ms muestra las plazas libres
  * y el estado (Thread.State) de cada coche.
  */
@@ -35,27 +35,44 @@ public class Nivel4Monitor {
             this.libres = capacidad;
         }
 
-        /** Espera hasta que haya una plaza libre y la ocupa. Devuelve las plazas que quedan. */
-        int entrar() throws InterruptedException {
+        /**
+         * Espera hasta que haya una plaza libre y la ocupa. Devuelve las plazas que quedan.
+         */
+        synchronized int entrar() throws InterruptedException {
             // TODO 4a: mientras no haya plazas libres, el coche espera.
             //          Antes de cada espera escribe: Util.log("espera: parking lleno");
+            while (libres == 0) {
+                Util.log("espera: parking lleno");
+                wait();
+            }
             libres--;
             maxDentro = Math.max(maxDentro, capacidad - libres);
             return libres;
         }
 
-        /** Libera la plaza, cobra y avisa a los que esperan. Devuelve las plazas libres. */
-        int salir(int euros) {
+        /**
+         * Libera la plaza, cobra y avisa a los que esperan. Devuelve las plazas libres.
+         */
+        synchronized int salir(int euros) {
             recaudado += euros;
             libres++;
             // TODO 4b: avisa a los coches que esperan plaza
+            notifyAll();
             return libres;
         }
 
         // TODO 4c: un monitor protege TODO su estado. Revisa todos los métodos de esta clase.
-        int getLibres() { return libres; }
-        int getMaxDentro() { return maxDentro; }
-        int getRecaudado() { return recaudado; }
+        synchronized int getLibres() {
+            return libres;
+        }
+
+        synchronized int getMaxDentro() {
+            return maxDentro;
+        }
+
+        synchronized int getRecaudado() {
+            return recaudado;
+        }
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -81,7 +98,8 @@ public class Nivel4Monitor {
         Thread panel = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 StringBuilder sb = new StringBuilder("LIBRES " + parking.getLibres() + " |");
-                for (Thread c : coches) sb.append(' ').append(c.getName().replace("Coche-", "C")).append('=').append(abreviar(c.getState()));
+                for (Thread c : coches)
+                    sb.append(' ').append(c.getName().replace("Coche-", "C")).append('=').append(abreviar(c.getState()));
                 Util.log(sb.toString());
                 Util.dormir(150);
             }
@@ -95,8 +113,10 @@ public class Nivel4Monitor {
         panel.join();
 
         System.out.println("\n===== CIERRE DEL NIVEL 4 =====");
-        Util.comprobar("Han aparcado los " + COCHES + " coches (recaudado " + parking.getRecaudado() + " €)", parking.getRecaudado() == COCHES * TARIFA);
-        Util.comprobar("Nunca hubo más coches que plazas (máximo " + parking.getMaxDentro() + "/" + PLAZAS + ")", parking.getMaxDentro() <= PLAZAS);
+        Util.comprobar("Han aparcado los " + COCHES + " coches (recaudado " + parking.getRecaudado() + " €)",
+                parking.getRecaudado() == COCHES * TARIFA);
+        Util.comprobar("Nunca hubo más coches que plazas (máximo " + parking.getMaxDentro() + "/" + PLAZAS + ")",
+                parking.getMaxDentro() <= PLAZAS);
         Util.comprobar("Al cerrar quedan " + PLAZAS + " plazas libres", parking.getLibres() == PLAZAS);
     }
 
